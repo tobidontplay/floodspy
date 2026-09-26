@@ -1,0 +1,22 @@
+name: floodspy
+path: /agent/repos/floodspy  # [INFERRED — confirm] path in this cloud workspace, not a laptop checkout
+repo: tobidontplay/floodspy
+language: TypeScript
+run: pnpm dev  # pnpm-lock.yaml is the lockfile. Script is next dev.
+test: "TODO: confirm — no tests detected"  # no test script and no test files were found
+build: pnpm build
+port: null  # next.config.mjs does not set a port
+env: .env.local
+watch:
+  - app
+  - components
+  - lib
+  - package.json
+auto_start: false
+auto_test: on-change
+features_dir: specs/features
+todo: TODO.md
+verification: docs/verification.md
+github:
+  enabled: true
+  ci: null
