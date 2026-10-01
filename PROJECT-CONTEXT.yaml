@@ -1,0 +1,592 @@
+# Ariadne project context for FloodSpy.
+# Snapshot from a read-only audit on 2026-10-01.
+# analysis_version: 1
+# Unknown values are null. They are not omitted.
+# Fleet status "paused" was supplied for this audit. The repo does not store that word.
+# Feature acceptance is not claimed. verified_by stays null in the specs.
+
+project:
+  name: floodspy
+  package_name: my-v0-project
+  repo: tobidontplay/floodspy
+  owner_github: tobidontplay
+  owner_personal_name: null
+  fleet_status: paused
+  generator: v0.dev
+  public_url: https://floodspy.vercel.app
+  public_url_checked_on: "2026-10-01"
+  default_branch: main
+  last_application_commit: 6bd13ff
+  last_application_commit_date: "2025-05-03"
+  last_docs_commit: 1ad788c
+  last_docs_commit_date: "2026-09-26"
+
+purpose: >
+  Crowdsourced flood monitoring for residents, aimed at Nigeria in the sample
+  data. The home page is a demo of a map, a report form, and an alerts list.
+  Two Supabase route handlers exist and reject anonymous callers. The pages
+  do not call those routes. A longer vision document describes SMS, sensors,
+  and prediction. That vision is not this tree.
+
+stage: paused
+maturity: prototype
+
+last_analysis: "2026-10-01"
+
+confidence:
+  overall: medium
+  code_reading: high
+  live_http: high
+  hosted_database: low
+  reason: >
+    The tree and the public HTTP checks are enough to classify the demo and
+    the 401 gate. They are not enough to know whether the hosted Supabase
+    project matches the SQL file, because no env file and no signed-in call
+    were available.
+
+analysis_version: 1
+
+goals:
+  stated:
+    - id: S1
+      statement: Home page maps floods, takes a report, and lists alerts, with Supabase behind the API.
+      source: AGENTS.md
+      success_criteria: A visitor can open the three tools and the tools use stored data.
+      met: false
+    - id: S2
+      statement: A signed-in user can submit a report, and an unsigned create is rejected.
+      source: specs/project-brief.md
+      success_criteria: Signed-in POST persists a row. Unsigned POST returns 401.
+      met: false
+      met_partial: Anonymous POST returned 401 on the public URL on 2026-10-01.
+    - id: S3
+      statement: Report writes require a Supabase user.
+      source: docs/architecture/decisions/001-authenticated-reports.md
+      success_criteria: The route calls getUser and stops when there is no user.
+      met: true
+    - id: S4
+      statement: Real-time monitoring, personalized multi-channel alerts, sensors, weather, and prediction for residents, responders, planners, and analysts.
+      source: docs/project-overview.md
+      success_criteria: null
+      met: false
+    - id: S5
+      statement: SMS, prediction, and planner tools are out of scope for the current tree.
+      source: specs/project-brief.md
+      success_criteria: Those systems are absent from application code.
+      met: true
+    - id: S6
+      statement: Confirm whether FloodSpy stays in the fleet.
+      source: TODO.md
+      success_criteria: null
+      met: null
+  inferred:
+    - id: I1
+      statement: Present a clickable Nigeria flood demo that does not need credentials.
+      source: components/flood-map.tsx
+      confidence: medium
+    - id: I2
+      statement: Keep a Supabase write path for a later connection.
+      source: app/api/flood-reports/route.ts
+      confidence: medium
+    - id: I3
+      statement: The relief feed and project creator are a side screen, not the monitoring spec.
+      source: app/feed/page.tsx
+      confidence: medium
+    - id: I4
+      statement: The owner published the demo.
+      source: https://floodspy.vercel.app
+      confidence: medium
+    - id: I5
+      statement: September 2026 work was fleet paperwork, not product behavior.
+      source: git log 5464192 and 1ad788c
+      confidence: high
+  non_goals:
+    - SMS and email delivery
+    - Predictive models
+    - Sensor and weather ingestion
+    - City-planner exports
+    - A native mobile app
+    - NextAuth as the wired login
+    - A test suite, until one is added
+    - Marking a feature accepted without the user
+  target_user: >
+    Stated target is a signed-in resident who reports a flood and a reader of
+    the map and alerts. Reachable today is an anonymous visitor of a demo.
+    Responder, planner, and analyst personas are named in the overview and
+    have no role in code.
+  success_criteria:
+    - id: C1
+      statement: Anonymous API create and read return 401.
+      met: true
+    - id: C2
+      statement: A signed-in user can store a report from the form.
+      met: false
+    - id: C3
+      statement: The map and alerts show stored rows.
+      met: false
+    - id: C4
+      statement: Verification log has tests, manual, and user opinion for a feature.
+      met: false
+  questions_for_user:
+    - Is the pause a stop, or a hold until the write path is real?
+    - Should map and alert reads be public?
+    - Should flood_reports.user_id reference auth.users instead of public.users?
+    - Are /feed and the project creator in the product?
+    - Is https://floodspy.vercel.app still the intended deploy?
+    - Which dev port should project.yaml record?
+    - Should the overview and docs/data-models.md be labeled vision?
+    - Should feature frontmatter stay Done while the UI is simulated?
+
+capabilities:
+  - id: home-shell
+    name: Home page shell with three tabs
+    status: done
+    confidence: high
+    evidence: Live GET / returned HTTP 200 with the title and tab triggers on 2026-10-01.
+    gap: null
+  - id: theme-toggle
+    name: Light, dark, and system theme
+    status: done
+    confidence: medium
+    evidence: ThemeToggle is mounted from the nav. It was not clicked.
+    gap: Runtime click not observed.
+  - id: stats-overview
+    name: Home statistics
+    status: partial
+    confidence: high
+    evidence: Live HTML shows Active Alerts 0. The component then assigns constants.
+    gap: Numbers are not counts.
+  - id: flood-map-display
+    name: Flood map
+    status: partial
+    confidence: high
+    evidence: components/flood-map.tsx uses five constants and placeholder.svg.
+    gap: No map library and no stored reports.
+  - id: flood-map-controls
+    name: Map view and severity controls
+    status: broken
+    confidence: high
+    evidence: view state does not change the image. Select has no change handler.
+    gap: Controls do not filter or restyle the map.
+  - id: report-form
+    name: Report form interaction
+    status: partial
+    confidence: high
+    evidence: components/report-form.tsx toasts success inside setTimeout.
+    gap: The form does not call the API.
+  - id: report-api
+    name: Store a flood report
+    status: broken
+    confidence: high
+    evidence: POST route exists. Live unauthenticated POST returned 401. UI never calls it.
+    gap: No sign-in, invalid form body, users foreign key, and no RLS policies in the migration.
+  - id: alerts-ui
+    name: Alerts list on the home page
+    status: partial
+    confidence: high
+    evidence: components/alerts-list.tsx uses four constants.
+    gap: Not loaded from flood_alerts.
+  - id: alerts-filter
+    name: Filter on-screen alerts by location text
+    status: done
+    confidence: medium
+    evidence: filteredAlerts uses String.includes on local state. Not clicked.
+    gap: null
+  - id: alerts-api
+    name: Read alerts from Supabase
+    status: partial
+    confidence: high
+    evidence: GET route only. Live GET without a cookie returned 401. UI does not fetch.
+    gap: No insert path and no UI caller.
+  - id: auth-deny
+    name: Reject an API call with no session
+    status: done
+    confidence: high
+    evidence: Live 401 JSON for both report methods and the alerts GET.
+    gap: null
+  - id: sign-in
+    name: Sign in and sign up from the product
+    status: absent
+    confidence: high
+    evidence: Sign In has no handler. Live /login returned 404.
+    gap: Entire flow is missing.
+  - id: geolocation
+    name: Use the device location
+    status: broken
+    confidence: high
+    evidence: Map pin button in the report form has no onClick.
+    gap: Copy promises a behavior the button does not implement.
+  - id: photo-evidence
+    name: Photo upload and depth estimate
+    status: absent
+    confidence: high
+    evidence: File stays in React state. No upload route and no model.
+    gap: Marketing copy only.
+  - id: notifications
+    name: Deliver alerts off the page
+    status: absent
+    confidence: high
+    evidence: Switch updates local state only.
+    gap: No push, SMS, or email.
+  - id: relief-feed
+    name: Relief feed
+    status: partial
+    confidence: high
+    evidence: Live /feed returned HTTP 200. Posts come from lib/mock-data.ts.
+    gap: Likes, comments, share, and bottom nav do not persist or navigate.
+  - id: project-creator
+    name: Creator campaigns and donations
+    status: partial
+    confidence: high
+    evidence: components/feed/project-creator.tsx uses literals such as $24,850.
+    gap: Launch and invite do not persist.
+  - id: dashboard
+    name: Operator dashboard
+    status: partial
+    confidence: high
+    evidence: Live /dashboard returned HTTP 200 with 2,853 and Prediction Accuracy and no cookie.
+    gap: Charts are placeholders. Page is public. Numbers are literals.
+  - id: prediction
+    name: Flood prediction
+    status: absent
+    confidence: high
+    evidence: No model file. Processor ends on a fixed neighborhood list.
+    gap: Entire capability is copy.
+  - id: multichannel-alerts
+    name: SMS and email alerts
+    status: absent
+    confidence: high
+    evidence: Named in docs/project-overview.md only.
+    gap: No provider.
+  - id: sensors-weather
+    name: Sensors, NiMet, and satellite feeds
+    status: absent
+    confidence: high
+    evidence: source strings on mock alerts. No HTTP client.
+    gap: No integration.
+  - id: map-library
+    name: Leaflet or Mapbox
+    status: absent
+    confidence: high
+    evidence: Not listed in package.json.
+    gap: Placeholder image instead.
+  - id: rls-policies
+    name: Row policies for alerts and reports
+    status: absent
+    confidence: high
+    evidence: Migration enables RLS and contains no CREATE POLICY.
+    gap: Hosted database match is unknown.
+    hosted_database_confidence: low
+  - id: account-row
+    name: public.users row for the Auth user
+    status: absent
+    confidence: high
+    evidence: Foreign key targets public.users. No insert and no trigger.
+    gap: getUser().id is not a guaranteed users.id.
+  - id: tests
+    name: Automated tests
+    status: absent
+    confidence: high
+    evidence: No test files and no test script.
+    gap: Setup doc still documents pnpm test.
+  - id: ci
+    name: Continuous integration
+    status: absent
+    confidence: high
+    evidence: No .github/workflows directory.
+    gap: project.yaml github.ci is null.
+  - id: env-bootstrap
+    name: Environment example for a new clone
+    status: broken
+    confidence: high
+    evidence: docs/development-setup.md copies .env.example. That file is absent.
+    gap: Required variable names exist only in source.
+
+stack:
+  language: TypeScript
+  language_version: null
+  runtime: Node.js
+  runtime_version_required_by_docs: "18"
+  framework: Next.js
+  framework_version: "15.1.0"
+  ui: Tailwind CSS 3.4 and Radix through a shadcn-style kit
+  database: Supabase Postgres
+  database_extensions_in_migration: PostGIS geography(point, 4326)
+  auth: Supabase Auth via @supabase/ssr
+  auth_libraries_installed_unused:
+    - next-auth
+    - bcryptjs
+  maps: null
+  charts_used_by_pages: null
+  charts_installed: recharts
+  state: component useState
+  validation: zod
+  package_manager: pnpm
+  hosting: Vercel
+  hosting_project_file: null
+  ci: null
+  test_runner: null
+  port_in_config: null
+  port_in_setup_doc: 3000
+  env_file_committed: null
+  env_vars:
+    - NEXT_PUBLIC_SUPABASE_URL
+    - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  service_role_key_in_repo: null
+
+architecture:
+  style: Next.js App Router with route handlers
+  client_data: simulated in the browser
+  server_data: Supabase through route handlers when a session exists
+  client_calls_server: false
+  entrypoints:
+    - path: /
+      kind: page
+      auth: none
+    - path: /feed
+      kind: page
+      auth: none
+    - path: /dashboard
+      kind: page
+      auth: none
+    - path: /api/flood-reports
+      kind: route
+      methods:
+        - GET
+        - POST
+      auth: session required
+    - path: /api/flood-alerts
+      kind: route
+      methods:
+        - GET
+      auth: session required
+  middleware:
+    file: middleware.ts
+    matcher:
+      - /api/:path*
+      - /dashboard/:path*
+    rejects_missing_session_on:
+      - /api
+    does_not_reject_missing_session_on:
+      - /dashboard
+  data_flow: >
+    Pages render client components that resolve fake data locally. Middleware
+    and route handlers are a separate path used only when something requests
+    /api. Nothing in the UI does that today.
+  tables_in_migration:
+    - users
+    - flood_alerts
+    - flood_reports
+  tables_in_vision_doc_not_in_migration:
+    - Location
+    - UserLocation
+    - Region
+    - Sensor
+    - SensorData
+    - Alert
+    - Forecast
+
+risks:
+  - id: R1
+    severity: high
+    confidence: high
+    title: Demo and API disagree
+    claim: The pages never call the routes, so a successful toast is not a stored report.
+    evidence: components/report-form.tsx
+  - id: R2
+    severity: high
+    confidence: high
+    title: No sign-in path
+    claim: The API requires a user and the UI cannot create one.
+    evidence: components/main-nav.tsx and live HTTP 404 on /login
+  - id: R3
+    severity: high
+    confidence: high
+    title: Migration is not wired for Supabase Auth
+    claim: RLS has no policies, and user_id references public.users, which nothing fills.
+    evidence: supabase/migrations/20250329162200_initial_schema.sql
+    hosted_database: null
+  - id: R4
+    severity: high
+    confidence: high
+    title: Docs overclaim
+    claim: Overview, data-models, API doc, and ADR 001 describe behavior the tree does not have.
+    evidence: docs/project-overview.md and docs/architecture/decisions/001-authenticated-reports.md
+  - id: R5
+    severity: medium
+    confidence: high
+    title: Build ignores typecheck and lint
+    claim: next.config.mjs will ship type errors, including unknown Badge variants.
+    evidence: next.config.mjs and components/ui/badge.tsx
+  - id: R6
+    severity: medium
+    confidence: medium
+    title: Geography insert format is unproven
+    claim: The route inserts a bare POINT string into a geography column.
+    evidence: app/api/flood-reports/route.ts
+  - id: R7
+    severity: medium
+    confidence: high
+    title: Report list is not scoped to the caller
+    claim: GET selects all flood_reports for any signed-in user, with no user_id filter.
+    evidence: app/api/flood-reports/route.ts
+  - id: R8
+    severity: low
+    confidence: high
+    title: Dead browser client throws if imported
+    claim: lib/supabase.ts throws when public env vars are missing, and nothing imports it.
+    evidence: lib/supabase.ts
+
+decisions:
+  - id: D1
+    title: Flood reports require a Supabase user
+    status: accepted
+    source: docs/architecture/decisions/001-authenticated-reports.md
+    holds_in_code: true
+    overclaim: The ADR says the page posts through the route. The form does not.
+  - id: D2
+    title: The vision document is not the feature spec
+    status: accepted
+    source: specs/project-brief.md
+    holds_in_code: true
+    overclaim: null
+  - id: D3
+    title: Feature stage stays implemented until the user validates
+    status: recorded
+    source: specs/features/001-flood-map.md
+    holds_in_code: null
+    overclaim: Frontmatter status is Done while validation is unknown.
+  - id: D4
+    title: Ignore TypeScript and ESLint during production builds
+    status: in-code
+    source: next.config.mjs
+    holds_in_code: true
+    overclaim: null
+  - id: D5
+    title: Use a server Supabase client in the alerts route
+    status: in-code
+    source: commit 6bd13ff
+    holds_in_code: true
+    overclaim: null
+
+open_questions:
+  - id: Q1
+    question: Is the fleet pause a stop or a hold?
+    why: TODO.md asks if the project should stay. The public URL still serves the demo.
+    answer: null
+  - id: Q2
+    question: Should map and alert reads be public?
+    why: The page is public and fake. The API is private.
+    answer: null
+  - id: Q3
+    question: Does the hosted database match the migration?
+    why: No credentials and the 401 returns before a query.
+    answer: null
+  - id: Q4
+    question: Will a POINT string insert into geography through PostgREST?
+    why: The route sends that string and this pass did not execute it.
+    answer: null
+  - id: Q5
+    question: Is the relief feed in scope?
+    why: It is linked from the home page and has no feature spec.
+    answer: null
+  - id: Q6
+    question: Which port should be recorded?
+    why: next.config.mjs sets none. The setup doc says 3000.
+    answer: null
+  - id: Q7
+    question: Should overview and data-models be labeled vision?
+    why: They contradict the SQL file and the package imports.
+    answer: null
+
+roadmap:
+  blocked_by: A resident cannot create a session and store a flood report.
+  now:
+    - id: N1
+      item: Decide whether the project stays paused as a demo.
+      source: TODO.md
+      status: open
+    - id: N2
+      item: Label or replace the overview so SMS and prediction are not read as shipped.
+      source: TODO.md
+      status: open
+  next:
+    - id: X1
+      item: Add a sign-in surface that calls the unused Supabase helpers, or delete the helpers and the 401 gate's product claim.
+      source: inferred from the gap
+      status: not started
+    - id: X2
+      item: Point the report form at POST /api/flood-reports with coordinates and a water level the schema allows.
+      source: inferred from the gap
+      status: not started
+    - id: X3
+      item: Add RLS policies and decide whether user_id references auth.users.
+      source: inferred from the migration
+      status: not started
+    - id: X4
+      item: Add one verification row after a signed-in report.
+      source: TODO.md
+      status: open
+  later:
+    - id: L1
+      item: Overview phase 2 only as a new spec, and only if the owner still wants it.
+      source: TODO.md
+      status: open
+    - id: L2
+      item: Real map library, only after the page reads stored points.
+      source: inferred
+      status: not started
+  out_of_scope_until_respecced:
+    - SMS
+    - email alerts
+    - prediction
+    - sensors
+    - planner exports
+
+links:
+  readme: README.md
+  agents: AGENTS.md
+  case_study: CASE-STUDY.md
+  changelog: CHANGELOG.md
+  todo: TODO.md
+  project_yaml: project.yaml
+  brief: specs/project-brief.md
+  feature_map: specs/features/001-flood-map.md
+  feature_reports: specs/features/002-flood-reports.md
+  adr_reports: docs/architecture/decisions/001-authenticated-reports.md
+  overview_vision: docs/project-overview.md
+  architecture: docs/architecture/overview.md
+  api_doc: docs/architecture/api.md
+  data_model_doc: docs/architecture/data-model.md
+  data_model_vision: docs/data-models.md
+  verification: docs/verification.md
+  migration: supabase/migrations/20250329162200_initial_schema.sql
+  state: PROJECT-STATE.md
+  goals: PROJECT-GOALS.md
+  gap: PROJECT-GAP.md
+  teach: PROJECT-TEACH.md
+  context: PROJECT-CONTEXT.yaml
+  ai_log: docs/ai-log/index.md
+  public_url: https://floodspy.vercel.app
+
+teaching_hooks:
+  - id: H1
+    seconds: 15
+    hook: The toast says the flood report was submitted. The form never called the server.
+    concept: A success message is not a persistence proof.
+  - id: H2
+    seconds: 15
+    hook: The API returns 401, which is the honest part, and the button that would sign you in does nothing.
+    concept: An auth gate without a login page blocks the product and protects an empty path.
+  - id: H3
+    seconds: 15
+    hook: Turning on row level security with no policy does not mean the table is ready. It means the table is closed.
+    concept: RLS default deny.
+  - id: H4
+    seconds: 15
+    hook: The overview describes sensors and prediction. The page describes five fake dots. Read the page.
+    concept: Vision doc versus tree.
+  - id: H5
+    seconds: 15
+    hook: The spec says Done, the verification log is empty, and the dashboard says 87 percent accuracy because someone typed it.
+    concept: Status words need evidence.
