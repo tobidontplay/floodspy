@@ -65,3 +65,14 @@ If this file conflicts with a direct user request, ASK before proceeding.
 - Concept mastery lives in docs/learning/concepts.md frontmatter.
 - When you complete a feature, update its frontmatter: stage, validation
   fields, verified_by. Do not mark "accepted" without user validation.
+
+## 11. Project Analysis Artifacts
+Audit snapshot, 2026-10-01. Fleet status at that pass: paused. Additive docs
+only. They do not change application behavior, feature frontmatter, or
+project.yaml.
+- [PROJECT-STATE.md](./PROJECT-STATE.md) — tables of what the tree and the public URL actually do
+- [PROJECT-GOALS.md](./PROJECT-GOALS.md) — stated goals, inferred goals, non-goals, questions
+- [PROJECT-GAP.md](./PROJECT-GAP.md) — one gap row per capability, three largest gaps, the blocking gap
+- [PROJECT-TEACH.md](./PROJECT-TEACH.md) — mental model a tutor can quiz from
+- [PROJECT-CONTEXT.yaml](./PROJECT-CONTEXT.yaml) — machine-readable context, analysis_version 1
+Read these before treating docs/project-overview.md or a feature status of Done as shipped behavior. The verification log is still the record of proof.
